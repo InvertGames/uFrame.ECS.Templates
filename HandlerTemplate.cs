@@ -43,7 +43,7 @@ namespace Invert.uFrame.ECS.Templates
 
         private void CreateFilterProperty(IFilterInput input, IMappingsConnectable inputFilter)
         {
-            var property = Ctx.CurrentDeclaration._public_(inputFilter.ContextTypeName, input.HandlerPropertyName);
+            Ctx.CurrentDeclaration._public_(inputFilter.ContextTypeName, input.HandlerPropertyName);
 
         }
 

@@ -536,7 +536,7 @@ namespace Invert.uFrame.ECS.Templates
         public void TemplateSetup()
         {
             this.Ctx.CurrentDeclaration.BaseTypes.Clear();
-            var method = Ctx.CurrentDeclaration.public_override_func(typeof(void), "Execute");
+            Ctx.CurrentDeclaration.public_override_func(typeof(void), "Execute");
             
         }
 
@@ -598,7 +598,7 @@ namespace Invert.uFrame.ECS.Templates
         public void TemplateSetup()
         {
             this.Ctx.CurrentDeclaration.BaseTypes.Clear();
-            var method = Ctx.CurrentDeclaration.public_override_func(typeof(void), "Execute");
+            Ctx.CurrentDeclaration.public_override_func(typeof(void), "Execute");
 
         }
 
