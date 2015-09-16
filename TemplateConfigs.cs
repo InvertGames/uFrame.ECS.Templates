@@ -52,6 +52,7 @@ namespace Invert.uFrame.ECS.Templates
     [RequiresNamespace("uFrame.Kernel")]
     [RequiresNamespace("uFrame.ECS")]
     [ForceBaseType(typeof(SystemLoader))]
+    [WithMetaInfo]
     public partial class LoaderTemplate : IClassTemplate<SystemNode>, ITemplateCustomFilename
     {
         public string OutputPath
@@ -249,6 +250,7 @@ namespace Invert.uFrame.ECS.Templates
 
     [TemplateClass(TemplateLocation.DesignerFile), AsPartial]
     [RequiresNamespace("uFrame.Kernel")]
+    [WithMetaInfo]
     public partial class SystemTemplate : IClassTemplate<SystemNode>, ITemplateCustomFilename
     {
         public string Filename
@@ -310,6 +312,7 @@ namespace Invert.uFrame.ECS.Templates
     [ForceBaseType(typeof(EcsComponent)), AsPartial]
     [RequiresNamespace("uFrame.ECS")]
     [RequiresNamespace("UnityEngine")]
+    [WithMetaInfo]
     public partial class ComponentTemplate : IClassTemplate<ComponentNode>, ITemplateCustomFilename
     {
         public string Filename
@@ -332,7 +335,7 @@ namespace Invert.uFrame.ECS.Templates
 
         public void TemplateSetup()
         {
-
+           
         }
 
         public TemplateContext<ComponentNode> Ctx { get; set; }

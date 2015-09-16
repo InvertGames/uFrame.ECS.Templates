@@ -67,7 +67,10 @@ namespace Invert.uFrame.ECS.Templates
 
         public override void VisitAction(SequenceItemNode actionNode)
         {
-           actionNode.WriteCode(this, _);
+            _._comment(actionNode.GetType().Name);
+            actionNode.OutputVariables(_);
+            actionNode.WriteDebugInfo(_);
+            actionNode.WriteCode(this, _);
         }
 
         public override void VisitOutput(IActionOut output)
