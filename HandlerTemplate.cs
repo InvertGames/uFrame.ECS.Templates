@@ -102,8 +102,8 @@ namespace Invert.uFrame.ECS.Templates
         {
             var branchMethod = new CodeMemberMethod()
             {
-                Name = output.VariableName,
-                ReturnType = new CodeTypeReference(typeof(IEnumerator))
+                ReturnType = !DebugSystem.IsDebugMode ? new CodeTypeReference(typeof(void)) : new CodeTypeReference(typeof(IEnumerator)),
+                Name = output.VariableName
             };
             _.PushStatements(branchMethod.Statements);
             var actionNode = output.Node as ActionNode;
@@ -114,7 +114,9 @@ namespace Invert.uFrame.ECS.Templates
             }
            
             base.VisitBranch(output);
-            _._("yield break");
+            if (DebugSystem.IsDebugMode)
+                _._("yield break");
+
             _.PopStatements();
             _.CurrentDeclaration.Members.Add(branchMethod);
 

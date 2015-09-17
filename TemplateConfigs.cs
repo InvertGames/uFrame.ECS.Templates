@@ -22,9 +22,9 @@ namespace Invert.uFrame.ECS.Templates
     {
         static EcsTemplates()
         {
-            InvertApplication.CachedAssemblies.Add(typeof(EcsTemplates).Assembly);
-            InvertApplication.CachedAssemblies.Add(typeof(UFAction).Assembly);
-            InvertApplication.TypeAssemblies.Add(typeof(UFAction).Assembly);
+            InvertApplication.CachedAssembly(typeof(EcsTemplates).Assembly);
+            InvertApplication.CachedAssembly(typeof(UFAction).Assembly);
+            InvertApplication.CachedTypeAssembly(typeof(UFAction).Assembly);
         }
         public override void Initialize(UFrameContainer container)
         {
@@ -179,13 +179,17 @@ namespace Invert.uFrame.ECS.Templates
         [GenerateMethod]
         public void Execute()
         {
-            this.Ctx.SetType(typeof(IEnumerator));
+            if (DebugSystem.IsDebugMode)
+                this.Ctx.SetType(typeof(IEnumerator));
+
             var csharpVisitor = new HandlerCsharpVisitor()
             {
                 _ = Ctx
             };
             Ctx.Data.Accept(csharpVisitor);
-            Ctx._("yield break");
+
+            if (DebugSystem.IsDebugMode)
+                Ctx._("yield break");
            
         }
 
