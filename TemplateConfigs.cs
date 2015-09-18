@@ -339,7 +339,10 @@ namespace Invert.uFrame.ECS.Templates
 
         public void TemplateSetup()
         {
-           
+            foreach (var item in Ctx.Data.GetMembers())
+            {
+                Ctx.TryAddNamespace(item.MemberType.Namespace);
+            }
         }
 
         public TemplateContext<ComponentNode> Ctx { get; set; }
@@ -456,23 +459,23 @@ namespace Invert.uFrame.ECS.Templates
 
         public void TemplateSetup()
         {
-            this.Ctx.CurrentDeclaration.CustomAttributes.Add(
-                new CodeAttributeDeclaration(
-                    typeof(uFrameEvent).ToCodeReference(), new CodeAttributeArgument(new CodePrimitiveExpression(Ctx.Data.Name))
-                    ));
-            if (Ctx.Data.Dispatcher)
-            {
-                this.Ctx.CurrentDeclaration.Name += "Dispatcher";
-                this.Ctx.SetBaseType(typeof(EcsDispatcher));
-            }
-            else
-            {
+            //this.Ctx.CurrentDeclaration.CustomAttributes.Add(
+            //    new CodeAttributeDeclaration(
+            //        typeof(uFrameEvent).ToCodeReference(), new CodeAttributeArgument(new CodePrimitiveExpression(Ctx.Data.Name))
+            //        ));
+            //if (Ctx.Data.Dispatcher)
+            //{
+            //    this.Ctx.CurrentDeclaration.Name += "Dispatcher";
+            //    this.Ctx.SetBaseType(typeof(EcsDispatcher));
+            //}
+            //else
+            //{
                 this.Ctx.CurrentDeclaration.Name = Ctx.Data.Name;
                 if (!Ctx.IsDesignerFile)
                 {
                     this.Ctx.CurrentDeclaration.BaseTypes.Clear();
                 }
-            }
+            //}
         }
 
         public TemplateContext<EventNode> Ctx { get; set; }

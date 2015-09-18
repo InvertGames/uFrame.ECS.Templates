@@ -69,15 +69,17 @@ namespace Invert.uFrame.ECS.Templates
         {
             _._comment(actionNode.GetType().Name);
             actionNode.OutputVariables(_);
+            //actionNode.WriteActionInputs(_);
             actionNode.WriteDebugInfo(_);
             actionNode.WriteCode(this, _);
+           // actionNode.WriteActionOutputs(_);
         }
 
         public override void VisitOutput(IActionOut output)
         {
             base.VisitOutput(output);
             if (output.ActionFieldInfo != null)
-                _.TryAddNamespace(output.ActionFieldInfo.Type.Namespace);
+                _.TryAddNamespace(output.ActionFieldInfo.MemberType.Namespace);
             
             if (output is ActionBranch) return;
             var varDecl = new CodeMemberField(
@@ -135,7 +137,7 @@ namespace Invert.uFrame.ECS.Templates
             if (input.ActionFieldInfo != null)
             {
                 if (input.ActionFieldInfo.IsGenericArgument) return;
-                _.TryAddNamespace(input.ActionFieldInfo.Type.Namespace);
+                _.TryAddNamespace(input.ActionFieldInfo.MemberType.Namespace);
                 var varDecl = new CodeMemberField(
                     input.VariableType.FullName.ToCodeReference(),
                     input.VariableName

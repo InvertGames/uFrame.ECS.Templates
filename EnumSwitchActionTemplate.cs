@@ -17,10 +17,8 @@ public class EcsDyanmicActionTemplates : DiagramPlugin
     public override void Initialize(UFrameContainer container)
     {
 
-        RegisteredTemplateGeneratorsFactory.RegisterTemplate<ComponentNode, AddComponentTemplate>();
-        RegisteredTemplateGeneratorsFactory.RegisterTemplate<EventNode, PublishActionTemplate>();
-        RegisteredTemplateGeneratorsFactory.RegisterTemplate<EntityNode, SpawnEntityTemplate>();
-        RegisteredTemplateGeneratorsFactory.RegisterTemplate<IMappingsConnectable, LoopComponentsTemplate>();
+        //RegisteredTemplateGeneratorsFactory.RegisterTemplate<ComponentNode, AddComponentTemplate>();
+        
     }
 }
 
@@ -87,23 +85,6 @@ public class ActionTemplate<TNodeType> :  IClassTemplate<TNodeType>, ITemplateCu
 }
 
 
-public class LoopComponentsTemplate : ActionTemplate<IMappingsConnectable>
-{
-    protected override string ClassName
-    {
-        get { return string.Format("{0}LoopAction", Ctx.Data.Name); }
-    }
-
-    protected override string ActionTitle
-    {
-        get { return string.Format("{0} Loop", Ctx.Data.Name); }
-    }
-    public override void TemplateSetup()
-    {
-        base.TemplateSetup();
-        this.Ctx.SetBaseType("LoopEntities<{0}>",Ctx.Data.Name);
-    }
-}
 public class AddComponentTemplate : ActionTemplate<ComponentNode>
 {
     protected override string ClassName
@@ -129,27 +110,6 @@ public class AddComponentTemplate : ActionTemplate<ComponentNode>
         Ctx._("Beside.gameObject.AddComponent<{0}>()",Ctx.Data.Name);
     }
 }
-//public class RemoveComponentTemplate : ActionTemplate<ComponentNode>
-//{
-//    protected override string ClassName
-//    {
-//        get { return string.Format("Remove{0}Action", Ctx.Data.Name); }
-//    }
-
-//    protected override string ActionTitle
-//    {
-//        get { return string.Format("Remove {0}", Ctx.Data.Name); }
-//    }
-
-//    [GenerateMethod(CallBase = true), AsOverride]
-//    public bool Execute()
-//    {
-        
-//        Ctx._("return base.Execute()");
-//        return false;
-//    }
-//}
-
 
 public class PublishActionTemplate : ActionTemplate<EventNode>
 {
