@@ -13,11 +13,12 @@ using uFrame.Attributes;
 using uFrame.ECS;
 
 [UnityEditor.CustomEditor(typeof(uFrame.ECS.Entity))]
-public class EntityEditor : Editor {
+public class EntityEditor : Editor
+{
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        InvertApplication.SignalEvent<IDrawUnityInspector>(_=>_.DrawInspector(target));
+        InvertApplication.SignalEvent<IDrawUnityInspector>(_ => _.DrawInspector(target));
     }
 }
 
@@ -34,7 +35,7 @@ public class UnityInspectors : DiagramPlugin, IDrawUnityInspector
         get { return _workspaceService ?? (_workspaceService = Container.Resolve<WorkspaceService>()); }
     }
     private IRepository _repository;
-//    private UserSettings _currentUser;
+    //    private UserSettings _currentUser;
 
     public IRepository Repository
     {
@@ -59,7 +60,7 @@ public class UnityInspectors : DiagramPlugin, IDrawUnityInspector
     public override void Loaded(UFrameContainer container)
     {
         base.Loaded(container);
-        
+
     }
 
     public void DrawInspector(Object target)
@@ -70,48 +71,49 @@ public class UnityInspectors : DiagramPlugin, IDrawUnityInspector
         {
             if (Repository != null)
             {
-                EditorGUILayout.HelpBox("0 = Auto Assign At Runtime",MessageType.Info);
-                
+                EditorGUILayout.HelpBox("0 = Auto Assign At Runtime", MessageType.Info);
+
             }
-          
+
         }
         var component = target as EcsComponent;
         //if (component != null)
         //{
-           
-            
-            if (Repository != null)
+
+
+        if (Repository != null)
+        {
+            var attribute = target.GetType().GetCustomAttributes(typeof(uFrameIdentifier), true).OfType<uFrameIdentifier>().FirstOrDefault();
+
+            if (attribute != null)
             {
-                var attribute = target.GetType().GetCustomAttributes(typeof(uFrameIdentifier), true).OfType<uFrameIdentifier>().FirstOrDefault();
-            
-                if (attribute != null)
+                var item = Repository.GetSingle<ComponentNode>(attribute.Identifier);
+                if (component != null)
                 {
-                    var item = Repository.GetSingle<ComponentNode>(attribute.Identifier);
-                    if (component != null)
+                    //if (GUIHelpers.DoToolbarEx("System Handlers"))
+                    //{
+                    //    foreach (
+                    //   var handlerNode in
+                    //       Repository.All<HandlerNode>()
+                    //           .Where(p => p.EntityGroup != null && p.EntityGroup.Item == item))
+                    //    {
+                    //        if (GUILayout.Button(handlerNode.Name))
+                    //        {
+                    //            Execute(new NavigateToNodeCommand()
+                    //            {
+                    //                Node = handlerNode,
+                    //                Select = true
+                    //            });
+                    //        }
+
+                    //    }
+                    //}
+                    if (GUIHelpers.DoToolbarEx("uFrame Designer"))
                     {
-                        //if (GUIHelpers.DoToolbarEx("System Handlers"))
-                        //{
-                        //    foreach (
-                        //   var handlerNode in
-                        //       Repository.All<HandlerNode>()
-                        //           .Where(p => p.EntityGroup != null && p.EntityGroup.Item == item))
-                        //    {
-                        //        if (GUILayout.Button(handlerNode.Name))
-                        //        {
-                        //            Execute(new NavigateToNodeCommand()
-                        //            {
-                        //                Node = handlerNode,
-                        //                Select = true
-                        //            });
-                        //        }
-                              
-                        //    }
-                        //}
-                        if (GUIHelpers.DoToolbarEx("uFrame Designer"))
                         foreach (
-                           var handlerNode in
-                               Repository.All<HandlerNode>()
-                                   .Where(p => p.EntityGroup != null && p.EntityGroup.Item != null && p.EntityGroup.Item.SelectComponents.Contains(item)))
+                   var handlerNode in
+                       Repository.All<HandlerNode>()
+                           .Where(p => p.HandlerInputs.Any(x=>x.Item != null && x.Item.Identifier == attribute.Identifier)))
                         {
                             EditorGUILayout.BeginHorizontal();
 
@@ -128,30 +130,33 @@ public class UnityInspectors : DiagramPlugin, IDrawUnityInspector
                             {
                                 if (GUILayout.Button("+ " + meta.SystemType.Name))
                                 {
-                                    
+
                                     component.gameObject.AddComponent(meta.SystemType);
                                 }
                             }
-                         
-                            EditorGUILayout.EndHorizontal();
-                            if (GUILayout.Button("Edit In Designer"))
-                            {
-                                Execute(new NavigateToNodeCommand()
-                                {
-                                    Node = item,
-                                    Select = true
-                                });
-                            }
-                        }
 
-                     
+                            EditorGUILayout.EndHorizontal();
+
+                        }
+                        if (GUILayout.Button("Edit In Designer"))
+                        {
+                            Execute(new NavigateToNodeCommand()
+                            {
+                                Node = item,
+                                Select = true
+                            });
+                        }
                     }
-                   
+
+
+
                 }
+
             }
+        }
 
         //}
-        
+
     }
 
     //public class UserSettings : IDataRecord
