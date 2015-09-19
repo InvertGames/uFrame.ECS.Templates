@@ -7,7 +7,7 @@ using System.Reflection;
 using Invert.Core;
 using Invert.Core.GraphDesigner;
 using Invert.IOC;
-
+using Invert.uFrame.ECS;
 using uFrame.Attributes;
 using uFrame.ECS;
 using UniRx;
@@ -25,9 +25,16 @@ namespace uFrame.ECS
             get { return 100; }
         }
 
+        static DebugMessenger()
+        {
+            uFrameECS.EcsComponentType = typeof (EcsComponent);
+            uFrameECS.EntityComponentType = typeof (Entity);
+        }
         public override void Initialize(UFrameContainer container)
         {
             base.Initialize(container);
+            uFrameECS.EcsComponentType = typeof(EcsComponent);
+            uFrameECS.EntityComponentType = typeof(Entity);
             DebugSystem = container.Resolve<DebugSystem>();
             if (Disposer != null)
             {
