@@ -36,6 +36,7 @@ namespace Invert.uFrame.ECS.Templates
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<GroupNode, GroupTemplate>();
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<GroupNode, GroupItemTemplate>();
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<HandlerNode, HandlerTemplate>();
+            RegisteredTemplateGeneratorsFactory.RegisterTemplate<HandlerNode, EditableHandlerTemplate>();
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<uFrameDatabaseConfig, DbLoaderTemplate>();
             //RegisteredTemplateGeneratorsFactory.RegisterTemplate<PropertyChangedNode, PropertyHandlerTemplate>();
             //            RegisteredTemplateGeneratorsFactory.RegisterTemplate<EntityNode, EntityTemplate>();
@@ -162,7 +163,7 @@ namespace Invert.uFrame.ECS.Templates
             get { return Path2.Combine("Handlers", Ctx.Data.Name + "Handler.cs"); }
         }
 
-        public bool CanGenerate
+        public virtual bool CanGenerate
         {
             get { return Ctx.Data.CanGenerate; }
         }
@@ -177,7 +178,7 @@ namespace Invert.uFrame.ECS.Templates
 
 
         [GenerateMethod]
-        public void Execute()
+        public virtual void Execute()
         {
             if (DebugSystem.IsDebugMode)
                 this.Ctx.SetType(typeof(IEnumerator));
@@ -201,8 +202,93 @@ namespace Invert.uFrame.ECS.Templates
     [RequiresNamespace("UnityEngine")]
     public partial class HandlerTemplate : SequenceTemplate<HandlerNode>
     {
-
+        public override bool CanGenerate
+        {
+            get { return !Ctx.Data.CodeHandler; }
+        }
     }
+
+    [TemplateClass(TemplateLocation.Both)]
+    [RequiresNamespace("uFrame.Kernel")]
+    [RequiresNamespace("UnityEngine")]
+    public partial class EditableHandlerTemplate : IClassTemplate<HandlerNode>, ITemplateCustomFilename
+    {
+        [GenerateProperty(TemplateLocation.DesignerFile), WithField]
+        public object Event
+        {
+            get
+            {
+
+                this.Ctx.SetType(Ctx.Data.EventType);
+                return null;
+            }
+            set
+            {
+
+            }
+        }
+
+        [GenerateProperty(TemplateLocation.DesignerFile), WithField]
+        public EcsSystem System { get; set; }
+
+        [TemplateSetup]
+        public void SetName()
+        {
+            Ctx.CurrentDeclaration.IsPartial = true;
+            Ctx.CurrentDeclaration.Name = Ctx.Data.HandlerMethodName;
+            Ctx.CurrentDeclaration.BaseTypes.Clear();
+            if (Ctx.IsDesignerFile) 
+            foreach (var item in Ctx.Data.FilterInputs)
+            {
+                var context = item.FilterNode;
+                if (context == null) continue;
+                CreateFilterProperty(item, context);
+            }
+
+        }
+
+        private void CreateFilterProperty(IFilterInput input, IMappingsConnectable inputFilter)
+        {
+            Ctx.CurrentDeclaration._public_(inputFilter.ContextTypeName, input.HandlerPropertyName);
+
+        }
+        [GenerateMethod, Inside((TemplateLocation.EditableFile))]
+        public void Execute()
+        {
+            
+        }
+
+        public string OutputPath
+        {
+            get { return null; }
+        }
+
+        public bool CanGenerate
+        {
+            get { return Ctx.Data.CodeHandler; }
+        }
+
+        public void TemplateSetup()
+        {
+            
+        }
+
+        public TemplateContext<HandlerNode> Ctx { get; set; }
+
+        public string Filename
+        {
+            get
+            {
+                if (Ctx.IsDesignerFile)
+                {
+                    return Path2.Combine("CustomHandlers", Ctx.Data.Name + ".designer.cs");
+                }
+                return Path2.Combine("CustomHandlers", Ctx.Data.Name + ".cs");
+            }
+        }
+    }
+
+
     [TemplateClass(TemplateLocation.DesignerFile)]
     [RequiresNamespace("uFrame.Kernel")]
     [RequiresNamespace("UnityEngine")]
