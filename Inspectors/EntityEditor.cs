@@ -3,6 +3,7 @@ using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Invert.Common;
 using Invert.Common.UI;
 using Invert.Core;
 using Invert.Core.GraphDesigner;
@@ -113,11 +114,12 @@ public class UnityInspectors : DiagramPlugin, IDrawUnityInspector
                         foreach (
                    var handlerNode in
                        Repository.All<HandlerNode>()
-                           .Where(p => p.HandlerInputs.Any(x=>x.Item != null && x.Item.Identifier == attribute.Identifier)))
+                           .Where(p => p.HandlerInputs.Any(x=>x.Item != null && x.Item.SelectComponents.Contains(item))))
                         {
+                           
                             EditorGUILayout.BeginHorizontal();
-
-                            if (GUILayout.Button(handlerNode.Name + " >"))
+                            var text = handlerNode.Name;
+                            if (GUILayout.Button(text,EditorStyles.toolbarButton))
                             {
                                 Execute(new NavigateToNodeCommand()
                                 {
@@ -128,7 +130,7 @@ public class UnityInspectors : DiagramPlugin, IDrawUnityInspector
                             var meta = handlerNode.Meta as EventMetaInfo;
                             if (meta != null && meta.Dispatcher && component.gameObject.GetComponent(meta.SystemType) == null)
                             {
-                                if (GUILayout.Button("+ " + meta.SystemType.Name))
+                                if (GUILayout.Button("+ " + meta.SystemType.Name,EditorStyles.toolbarButton))
                                 {
 
                                     component.gameObject.AddComponent(meta.SystemType);
@@ -138,7 +140,7 @@ public class UnityInspectors : DiagramPlugin, IDrawUnityInspector
                             EditorGUILayout.EndHorizontal();
 
                         }
-                        if (GUILayout.Button("Edit In Designer"))
+                        if (GUILayout.Button("Edit In Designer",EditorStyles.toolbarButton))
                         {
                             Execute(new NavigateToNodeCommand()
                             {
