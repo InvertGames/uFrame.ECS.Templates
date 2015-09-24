@@ -1,5 +1,8 @@
-﻿using Invert.Core;
+﻿using Invert.Common;
+using Invert.Core;
+using Invert.Core.GraphDesigner;
 using UnityEditor;
+using UnityEngine;
 
 [UnityEditor.CustomEditor(typeof(uFrame.ECS.EcsComponent),true)]
 public class ComponentEditor : Editor

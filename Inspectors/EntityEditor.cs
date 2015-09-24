@@ -1,8 +1,11 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using Invert.Common;
 using Invert.Common.UI;
 using Invert.Core;
 using Invert.Core.GraphDesigner;
@@ -11,10 +14,61 @@ using Invert.IOC;
 using Invert.uFrame.ECS;
 using uFrame.Attributes;
 using uFrame.ECS;
+using Object = UnityEngine.Object;
 
 [UnityEditor.CustomEditor(typeof(uFrame.ECS.Entity))]
 public class EntityEditor : Editor
 {
+    private static Dictionary<int, List<string>> _markers;
+    private static IRepository _repository1;
+    private static IPlatformDrawer _drawer;
+
+    private static Dictionary<int, List<string>> Markers
+    {
+        get { return _markers ?? (_markers = new Dictionary<int, List<string>>()); }
+        set { _markers = value; }
+    }
+
+    static EntityEditor()
+    {
+        // Init
+        EditorApplication.hierarchyWindowItemOnGUI += HierarchyItemCB;
+    }
+
+    public static IRepository Repository
+    {
+        get { return _repository1 ?? (_repository1 = InvertApplication.Container.Resolve<IRepository>()); }
+        set { _repository1 = value; }
+    }
+
+    public static IPlatformDrawer Drawer
+    {
+        get { return _drawer ?? (_drawer = InvertApplication.Container.Resolve<IPlatformDrawer>()); }
+    }
+
+    static void HierarchyItemCB(int instanceID, Rect selectionRect)
+    {
+        var go  = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
+        if (go == null) return;
+
+        var components = go.GetComponents(typeof (EcsComponent));
+        var iconRect = new Rect().WithSize(16, 16).InnerAlignWithUpperRight(selectionRect).AlignHorisonallyByCenter(selectionRect).Translate(-5,0);
+
+        foreach (var component in components)
+        {
+            string icon = null;
+
+            InvertApplication.SignalEvent<IFetchIcon>(_ => icon = _.FetchIcon(component));
+
+            if(string.IsNullOrEmpty(icon)) continue;
+            var cCache = GUI.color;
+            GUI.color = new Color(cCache.r, cCache.g, cCache.b, cCache.a * 0.7f);
+            Drawer.DrawImage(iconRect,icon,true);
+            iconRect = iconRect.LeftOf(iconRect).Translate(-5,0);
+            GUI.color = cCache;
+        }
+    }
+
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
@@ -22,11 +76,18 @@ public class EntityEditor : Editor
     }
 }
 
+
+
+public interface IFetchIcon
+{
+    string FetchIcon(object component);
+}
+
 public interface IDrawUnityInspector
 {
     void DrawInspector(Object target);
 }
-public class UnityInspectors : DiagramPlugin, IDrawUnityInspector
+public class UnityInspectors : DiagramPlugin, IDrawUnityInspector, IDataRecordPropertyChanged, IFetchIcon
 {
     private WorkspaceService _workspaceService;
 
@@ -35,12 +96,20 @@ public class UnityInspectors : DiagramPlugin, IDrawUnityInspector
         get { return _workspaceService ?? (_workspaceService = Container.Resolve<WorkspaceService>()); }
     }
     private IRepository _repository;
+    private IPlatformDrawer _drawer;
+    private Dictionary<string, string> _iconsCache;
     //    private UserSettings _currentUser;
 
     public IRepository Repository
     {
         get { return _repository ?? (_repository = Container.Resolve<IRepository>()); }
     }
+  
+    public IPlatformDrawer Drawer
+    {
+        get { return _drawer ?? (_drawer = Container.Resolve<IPlatformDrawer>()); }
+    }
+
 
 
     //public string CurrentUserId
@@ -90,6 +159,11 @@ public class UnityInspectors : DiagramPlugin, IDrawUnityInspector
                 var item = Repository.GetSingle<ComponentNode>(attribute.Identifier);
                 if (component != null)
                 {
+
+                    var inspectorBounds = new Rect(0, 0, Screen.width, Screen.height);
+                    var iconBounds = new Rect().WithSize(16, 16).InnerAlignWithUpperRight(inspectorBounds);
+                    Drawer.DrawImage(iconBounds,"CommandIcon",true);
+
                     //if (GUIHelpers.DoToolbarEx("System Handlers"))
                     //{
                     //    foreach (
@@ -173,4 +247,46 @@ public class UnityInspectors : DiagramPlugin, IDrawUnityInspector
     //    public bool Changed { get; set; }
     //    public IEnumerable<string> ForeignKeys { get { yield break; } }
     //}
+    public void PropertyChanged(IDataRecord record, string name, object previousValue, object nextValue)
+    {
+        var typedRecord = record as ComponentNode;
+        if (typedRecord != null && name == "CustomIcon")
+        {
+            var typeName = typedRecord.TypeName;
+            IconsCache[typeName] = (string)nextValue;
+        }
+    }
+
+    public Dictionary<string, string> IconsCache
+    {
+        get { return _iconsCache ?? (_iconsCache = new Dictionary<string, string>()); }
+        set { _iconsCache = value; }
+    }
+
+    public string FetchIcon(object component)
+    {
+        string icon;
+        var type = component.GetType();
+        var typeName = type.Name;
+        if (IconsCache.TryGetValue(typeName, out icon))
+            return icon;
+
+        if (Repository != null)
+        {
+            var attribute =
+                type
+                    .GetCustomAttributes(typeof (uFrameIdentifier), true)
+                    .OfType<uFrameIdentifier>()
+                    .FirstOrDefault();
+
+            if (attribute != null)
+            {
+                var item = Repository.GetSingle<ComponentNode>(attribute.Identifier);
+                IconsCache[typeName] = item.CustomIcon;
+            }
+        }
+
+        IconsCache.TryGetValue(typeName, out icon);
+        return icon;
+    }
 }
