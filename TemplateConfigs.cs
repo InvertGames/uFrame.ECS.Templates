@@ -91,8 +91,8 @@ namespace Invert.uFrame.ECS.Templates
         [GenerateMethod, AsOverride]
         public void Load()
         {
-            Ctx._("EcsSystem system = null");
-            Ctx._("system = this.AddSystem<{0}>()", Ctx.Data.Name);
+            //Ctx._("EcsSystem system = null");
+            Ctx._("this.AddSystem<{0}>()", Ctx.Data.Name);
          
         }
 
