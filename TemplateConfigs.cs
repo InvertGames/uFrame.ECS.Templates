@@ -38,6 +38,7 @@ namespace Invert.uFrame.ECS.Templates
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<HandlerNode, HandlerTemplate>();
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<HandlerNode, EditableHandlerTemplate>();
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<uFrameDatabaseConfig, DbLoaderTemplate>();
+            RegisteredTemplateGeneratorsFactory.RegisterTemplate<uFrameDatabaseConfig, EcsEditorExtensionTemplate>();
             //RegisteredTemplateGeneratorsFactory.RegisterTemplate<PropertyChangedNode, PropertyHandlerTemplate>();
             //            RegisteredTemplateGeneratorsFactory.RegisterTemplate<EntityNode, EntityTemplate>();
 
@@ -99,6 +100,70 @@ namespace Invert.uFrame.ECS.Templates
 
     }
 
+
+    [TemplateClass(TemplateLocation.DesignerFile)]
+    [RequiresNamespace("uFrame.Kernel")]
+    [RequiresNamespace("uFrame.ECS")]
+    [WithMetaInfo]
+    public partial class EcsEditorExtensionTemplate : IClassTemplate<uFrameDatabaseConfig>, ITemplateCustomFilename
+    {
+        public string OutputPath
+        {
+            get { return Path2.Combine("Editor", Ctx.Data.Title); }
+        }
+
+        public string Filename
+        {
+            get
+            {
+                return Path2.Combine("Editor", Ctx.Data.Title + "EditorExtensions.cs");
+            }
+        }
+
+        public bool CanGenerate
+        {
+            get { return true; }
+        }
+
+        public void TemplateSetup()
+        {
+            this.Ctx.CurrentDeclaration.Name = Ctx.Data.Title + "EditorExtensions";
+            this.Ctx.CurrentDeclaration.BaseTypes.Clear();
+            this.Ctx.CurrentDeclaration.Attributes |= MemberAttributes.Static;
+            this.Ctx.CurrentDeclaration.CustomAttributes.Add(
+                new CodeAttributeDeclaration(new CodeTypeReference(typeof (InitializeOnLoadAttribute))));
+
+        }
+
+        public TemplateContext<uFrameDatabaseConfig> Ctx { get; set; }
+
+        [GenerateMethod]
+        public void AddKernel()
+        {
+            var codeAttributeDeclaration = new CodeAttributeDeclaration(new CodeTypeReference(typeof(MenuItem)));
+            
+            codeAttributeDeclaration.Arguments.Add(
+                new CodeAttributeArgument(new CodePrimitiveExpression(string.Format("GameObject/Create {0} Kernel", Ctx.Data.Title))));
+            codeAttributeDeclaration.Arguments.Add(
+               new CodeAttributeArgument(new CodePrimitiveExpression(false)));
+            codeAttributeDeclaration.Arguments.Add(
+               new CodeAttributeArgument(new CodePrimitiveExpression(0)));
+            this.Ctx.CurrentMethod.CustomAttributes.Add(codeAttributeDeclaration);
+            this.Ctx.CurrentMethod.Attributes |= MemberAttributes.Static;
+            Ctx._("Invert.uFrame.ECS.Templates.EcsEditorExtensionTemplate.AddEcsKernelWith<{0}.{1}>()", Ctx.Data.Namespace , Ctx.Data.Title + "Loader");
+        }
+
+        public static void AddEcsKernelWith<TLoaderType>() where TLoaderType : Component
+        {
+            GameObject obj = new GameObject("_Kernel");
+            obj.AddComponent<uFrameKernel>();
+            obj.AddComponent<EcsSystemLoader>();
+            obj.AddComponent<TLoaderType>();
+
+        }
+    }
+
+
     [TemplateClass(TemplateLocation.DesignerFile, "{0}Loader"), AsPartial]
     [RequiresNamespace("uFrame.Kernel")]
     [RequiresNamespace("uFrame.ECS")]
@@ -146,6 +211,7 @@ namespace Invert.uFrame.ECS.Templates
 
         }
 
+        
 
     }
 
