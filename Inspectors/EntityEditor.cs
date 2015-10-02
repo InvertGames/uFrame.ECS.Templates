@@ -283,7 +283,7 @@ public class UnityInspectors : DiagramPlugin, IDrawUnityInspector, IDataRecordPr
             if (attribute != null)
             {
                 var item = Repository.GetSingle<ComponentNode>(attribute.Identifier);
-                IconsCache[typeName] = item.CustomIcon;
+                if(IconsCache != null && item !=null) IconsCache[typeName] = item.CustomIcon;
             }
         }
 
