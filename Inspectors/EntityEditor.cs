@@ -72,6 +72,7 @@ public class EntityEditor : Editor
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
+        
         InvertApplication.SignalEvent<IDrawUnityInspector>(_ => _.DrawInspector(target));
     }
 }
