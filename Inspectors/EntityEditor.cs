@@ -133,6 +133,8 @@ public class UnityInspectors : DiagramPlugin, IDrawUnityInspector, IDataRecordPr
 
     }
 
+
+    public TreeViewModel TreeModel { get; set; }
     public void DrawInspector(Object target)
     {
         GUIHelpers.IsInsepctor = true;
@@ -144,7 +146,46 @@ public class UnityInspectors : DiagramPlugin, IDrawUnityInspector, IDataRecordPr
                 EditorGUILayout.HelpBox("0 = Auto Assign At Runtime", MessageType.Info);
 
             }
+            //if (GUILayout.Button("Create New Component"))
+            //{
+            //    if (TreeModel == null)
+            //    {
+            //        TreeModel = new TreeViewModel()
+            //        {
+            //            Data = Container.Resolve<IRepository>().AllOf<ModuleNode>().Select(item=>new SelectionMenuItem(item,
+            //                () =>
+            //                {
 
+
+            //                })).Cast<IItem>().ToList()
+            //        };
+            //    }
+            //    else
+            //    {
+            //        TreeModel = null;
+            //    }
+               
+            //}
+            //if (TreeModel != null)
+            //{
+            //     var lastRect = GUILayoutUtility.GetLastRect();
+            //    var rect = GUILayoutUtility.GetRect(lastRect.x, lastRect.y, 300, 500);
+
+	        //    Signal<IDrawTreeView>(_=>_.DrawTreeView(rect,TreeModel,(p,x)=>{
+	        //    	var item = (x as SelectionMenuItem).DataObject as IDiagramNode;
+		    //        Execute(new NavigateToNodeCommand()
+		    //        {
+			//            Node = item as IDiagramNode
+            //        });
+		    //        Execute(new CreateNodeCommand()
+		    //        {
+			//            NodeType = typeof(ComponentNode),
+			//            GraphData = InvertGraphEditor.CurrentDiagramViewModel.GraphData,
+			            
+            //        });
+		    //        TreeModel = null;
+	        //    }));
+            //}
         }
         var component = target as EcsComponent;
         //if (component != null)
