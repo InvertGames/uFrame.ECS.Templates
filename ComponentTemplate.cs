@@ -1,3 +1,4 @@
+using System.CodeDom;
 using System.Collections.Generic;
 using Invert.Core.GraphDesigner;
 using UniRx;
@@ -38,7 +39,25 @@ namespace Invert.uFrame.ECS.Templates
             }
         }
 
-        [ForEach("Collections"), GenerateProperty, WithName, WithLazyField(null,typeof(SerializeField))]
-        public List<_ITEMTYPE_> Collection { get; set; }
+        //[ForEach("Collections"), GenerateProperty, WithName, WithLazyField(null,typeof(SerializeField))]
+        //public List<_ITEMTYPE_> Collection { get; set; }
+
+        [ForEach("Collections"), GenerateProperty, WithNameFormat("{0}")]
+        public ReactiveCollection<_ITEMTYPE_> CollectionReactive {
+            get
+            {
+                var fieldA = Ctx.CurrentDeclaration._private_(string.Format("{0}[]", Ctx.TypedItem.RelatedTypeName),
+                  "_{0}", Ctx.Item.Name);
+                fieldA.CustomAttributes.Add(new CodeAttributeDeclaration(new CodeTypeReference(typeof (SerializeField))));
+
+                var field = Ctx.CurrentDeclaration._private_(string.Format("ReactiveCollection<{0}>", Ctx.TypedItem.RelatedTypeName),
+                    "_{0}Reactive", Ctx.Item.Name);
+
+                Ctx._if("{0} == null", field.Name)
+                    .TrueStatements._("{0} = new ReactiveCollection<{1}>(_{2})", field.Name, Ctx.TypedItem.RelatedTypeName, Ctx.Item.Name, fieldA.Name);
+                Ctx._("return {0}", field.Name);
+                return null;
+            }
+        }
     }
 }

@@ -38,7 +38,8 @@ namespace Invert.uFrame.ECS.Templates
                 if (context == null) continue;
                 CreateFilterProperty( item, context );
             }
-            
+            Ctx.Data.AddProperties(this.Ctx);
+
         }
 
         private void CreateFilterProperty(IFilterInput input, IMappingsConnectable inputFilter)

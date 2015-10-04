@@ -122,7 +122,7 @@ namespace Invert.uFrame.ECS.Templates
 
         public bool CanGenerate
         {
-            get { return true; }
+            get { return Ctx.Data.Repository.All<SystemNode>().Any(); }
         }
 
         public void TemplateSetup()
@@ -310,6 +310,7 @@ namespace Invert.uFrame.ECS.Templates
                 if (context == null) continue;
                 CreateFilterProperty(item, context);
             }
+            Ctx.Data.AddProperties(Ctx);
 
         }
 
