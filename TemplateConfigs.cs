@@ -408,6 +408,7 @@ namespace Invert.uFrame.ECS.Templates
     [TemplateClass(TemplateLocation.DesignerFile), AsPartial]
     [RequiresNamespace("uFrame.Kernel")]
     [WithMetaInfo]
+    [AutoNamespaces]
     public partial class SystemTemplate : IClassTemplate<SystemNode>, ITemplateCustomFilename
     {
         public string Filename
@@ -459,7 +460,7 @@ namespace Invert.uFrame.ECS.Templates
 
         public void TemplateSetup()
         {
-
+   
         }
 
         public TemplateContext<SystemNode> Ctx { get; set; }
@@ -580,6 +581,7 @@ namespace Invert.uFrame.ECS.Templates
 
     [TemplateClass(TemplateLocation.DesignerFile), AsPartial]
     [RequiresNamespace("uFrame.ECS")]
+    [AutoNamespaces]
     public partial class EventTemplate : IClassTemplate<EventNode>, ITemplateCustomFilename
     {
         public IEnumerable<PropertiesChildItem> Properties
