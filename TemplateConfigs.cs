@@ -499,6 +499,19 @@ namespace Invert.uFrame.ECS.Templates
             }
         }
 
+        [TemplateComplete]
+        public void TemplateComplete()
+        {
+            foreach (var item in Ctx.Data.Properties.Where(p => p.HideInUnityInspector))
+            {
+                var field = this.Ctx.CurrentDeclaration.Members.OfType<CodeMemberField>()
+                    .FirstOrDefault(p => p.Name == "_" + item.Name);
+                if (field != null)
+                {
+                    field.CustomAttributes.Add(new CodeAttributeDeclaration(typeof (HideInInspector).ToCodeReference()));
+                }
+            }
+        }
         public TemplateContext<ComponentNode> Ctx { get; set; }
     }
 
