@@ -142,11 +142,11 @@ public class UnityInspectors : DiagramPlugin, IDrawUnityInspector, IDataRecordPr
         var entityComponent = target as Entity;
         if (entityComponent != null)
         {
-            if (Repository != null)
-            {
-                EditorGUILayout.HelpBox("0 = Auto Assign At Runtime", MessageType.Info);
+            //if (Repository != null)
+            //{
+            //    EditorGUILayout.HelpBox("0 = Auto Assign At Runtime", MessageType.Info);
 
-            }
+            //}
             //if (GUILayout.Button("Create New Component"))
             //{
             //    if (TreeModel == null)

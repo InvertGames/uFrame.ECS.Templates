@@ -30,6 +30,7 @@ namespace Invert.uFrame.ECS.Templates
         {
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<SystemNode, SystemTemplate>();
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<ComponentNode, ComponentTemplate>();
+            RegisteredTemplateGeneratorsFactory.RegisterTemplate<ComponentNode, ComponentEditableTemplate>();
             //            RegisteredTemplateGeneratorsFactory.RegisterTemplate<ComponentGroupNode,ComponentGroupTemplate>();
             //          RegisteredTemplateGeneratorsFactory.RegisterTemplate<ComponentGroupNode,ComponentGroupManagerTemplate>();
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<EventNode, EventTemplate>();
@@ -47,6 +48,7 @@ namespace Invert.uFrame.ECS.Templates
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<CodeActionNode, CodeActionEditableTemplate>();
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<CodeActionNode, CodeActionDesignerTemplate>();
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<SystemNode, LoaderTemplate>();
+            RegisteredTemplateGeneratorsFactory.RegisterTemplate<ModuleNode, ComponentExtensionsTemplate>();
         }
     }
 
@@ -100,6 +102,88 @@ namespace Invert.uFrame.ECS.Templates
 
     }
 
+    [TemplateClass(TemplateLocation.DesignerFile, "{0}ComponentExtensions")]
+    [RequiresNamespace("uFrame.Kernel")]
+    [RequiresNamespace("uFrame.ECS")]
+    public partial class ComponentExtensionsTemplate : IClassTemplate<ModuleNode>, ITemplateCustomFilename
+    {
+        public string OutputPath
+        {
+            get { return Path2.Combine("Modules", Ctx.Data.Name, Ctx.Data.Name); }
+        }
+
+        public string Filename
+        {
+            get
+            {
+                return Path2.Combine("Systems", Ctx.Data.Name + "Extensions.cs");
+            }
+        }
+
+        public bool CanGenerate
+        {
+            get { return Groups.Any() || Components.Any(); }
+        }
+
+        public void TemplateSetup()
+        {
+            
+        }
+        [TemplateComplete]
+        public void Post()
+        {
+            this.Ctx.CurrentDeclaration.Name = Ctx.Data.Name + "Extensions";
+            this.Ctx.CurrentDeclaration.BaseTypes.Clear();
+            this.Ctx.CurrentDeclaration.MakeStatic();
+        }
+        public TemplateContext<ModuleNode> Ctx { get; set; }
+        public IEnumerable<GroupNode> Groups
+        {
+            get
+            {
+                return Ctx.Data.Graph.NodeItems.OfType<GroupNode>();
+            }
+        }
+
+        public IEnumerable<ComponentNode> Components
+        {
+            get
+            {
+                return Ctx.Data.Graph.NodeItems.OfType<ComponentNode>();
+            }
+        }
+
+        public IEnumerable<IDiagramNode> All
+        {
+            get
+            {
+                return Components.OfType<IDiagramNode>().Concat(Groups.OfType<IDiagramNode>());
+            }
+        }
+
+        [ForEach("All"), GenerateMethod]
+        public void _Name_Manager()
+        {
+            this.Ctx.CurrentMethod.Parameters.Add(
+                new CodeParameterDeclarationExpression("this uFrame.ECS.IEcsSystem", "system"));
+            this.Ctx.CurrentMethod.MakeStatic();
+            this.Ctx.CurrentMethod.ReturnType = string.Format("uFrame.ECS.IEcsComponentManagerOf<{0}>", Ctx.Item.Name).ToCodeReference();
+            Ctx._("return system.ComponentSystem.RegisterComponent<{0}>()",Ctx.Item.Name);
+        }
+
+        [ForEach("All"), GenerateMethod]
+        public void _Name_Components()
+        {
+            this.Ctx.CurrentMethod.Parameters.Add(
+                new CodeParameterDeclarationExpression("this uFrame.ECS.IEcsSystem", "system"));
+            this.Ctx.CurrentMethod.MakeStatic();
+            this.Ctx.CurrentMethod.ReturnType = string.Format("List<{0}>", Ctx.Item.Name).ToCodeReference();
+            Ctx._("return system.ComponentSystem.RegisterComponent<{0}>().Components", Ctx.Item.Name);
+        }
+
+
+  
+    }
 
     [TemplateClass(TemplateLocation.DesignerFile)]
     [RequiresNamespace("uFrame.Kernel")]
@@ -431,7 +515,7 @@ namespace Invert.uFrame.ECS.Templates
         {
             get
             {
-                return Ctx.Data.Graph.NodeItems.OfType<ISystemGroupProvider>().SelectMany(p=>p.GetSystemGroups()).OfType<ComponentNode>().Distinct();
+                return Ctx.Data.Graph.NodeItems.OfType<ISystemGroupProvider>().SelectMany(p => p.GetSystemGroups()).OfType<ComponentNode>().Concat(Ctx.Data.Graph.NodeItems.OfType<ComponentNode>()).Distinct();
 
             }
         }
@@ -440,7 +524,7 @@ namespace Invert.uFrame.ECS.Templates
         {
             get
             {
-                return Ctx.Data.Graph.NodeItems.OfType<ISystemGroupProvider>().SelectMany(p => p.GetSystemGroups()).OfType<GroupNode>().Distinct();
+                return Ctx.Data.Graph.NodeItems.OfType<ISystemGroupProvider>().SelectMany(p => p.GetSystemGroups()).OfType<GroupNode>().Concat(Ctx.Data.Graph.NodeItems.OfType<GroupNode>()).Distinct();
             }
         }
 
@@ -466,8 +550,8 @@ namespace Invert.uFrame.ECS.Templates
         public TemplateContext<SystemNode> Ctx { get; set; }
     }
 
-    [TemplateClass(TemplateLocation.DesignerFile)]
-    [ForceBaseType(typeof(EcsComponent)), AsPartial]
+    [TemplateClass(TemplateLocation.DesignerFile,AutoInherit = true)]
+    [ AsPartial]
     [RequiresNamespace("uFrame.ECS")]
     [RequiresNamespace("UnityEngine")]
     [WithMetaInfo]
@@ -493,6 +577,16 @@ namespace Invert.uFrame.ECS.Templates
 
         public void TemplateSetup()
         {
+            Ctx.CurrentDeclaration.BaseTypes.Clear();
+            if (Ctx.Data.BaseNode != null)
+            {
+                Ctx.SetBaseType(Ctx.Data.BaseNode.FullName);
+            }
+            else
+            {
+                Ctx.SetBaseType(typeof(EcsComponent));
+            }
+
             foreach (var item in Ctx.Data.GetMembers())
             {
                 Ctx.TryAddNamespace(item.MemberType.Namespace);
@@ -514,6 +608,46 @@ namespace Invert.uFrame.ECS.Templates
         }
         public TemplateContext<ComponentNode> Ctx { get; set; }
     }
+    [TemplateClass(TemplateLocation.EditableFile)]
+    [AsPartial]
+    [RequiresNamespace("uFrame.ECS")]
+    [RequiresNamespace("UnityEngine")]
+    public partial class ComponentEditableTemplate : IClassTemplate<ComponentNode>, ITemplateCustomFilename , IOnDemandTemplate
+    {
+        public string Filename
+        {
+            get
+            {
+                return Path2.Combine("Custom", Ctx.Data.Name + ".cs");
+            }
+        }
+        // Not used now
+        public string OutputPath
+        {
+            get { return Path2.Combine("Extensions", Ctx.Data.Graph.Name, "Components"); }
+        }
+
+        public bool CanGenerate
+        {
+            get { return true; }
+        }
+
+        public void TemplateSetup()
+        {
+            Ctx.CurrentDeclaration.BaseTypes.Clear();
+            foreach (var item in Ctx.Data.GetMembers())
+            {
+                Ctx.TryAddNamespace(item.MemberType.Namespace);
+            }
+        }
+
+        [TemplateComplete]
+        public void TemplateComplete()
+        {
+        }
+        public TemplateContext<ComponentNode> Ctx { get; set; }
+    }
+
 
     [TemplateClass(TemplateLocation.DesignerFile, "{0}Group"), AsPartial]
     [RequiresNamespace("uFrame.ECS")]
