@@ -20,7 +20,7 @@ namespace Invert.uFrame.ECS.Templates
             {
                 var node = item.Node;
                 
-                Ctx._("componentSystem.PropertyChanged<{0}, {1}>(_ => _.{2}Observable, (c, v) => {{ UpdateItem(c.EntityId); }})",
+                Ctx._("componentSystem.PropertyChangedEvent<{0}, {1}>(_ => _.{2}Observable, (c, v) => {{ UpdateItem(c.EntityId); }})",
                     node.Name,
                     item.RelatedTypeName,
                     item.Name);

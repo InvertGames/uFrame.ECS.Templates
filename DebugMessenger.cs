@@ -28,6 +28,7 @@ namespace uFrame.ECS
         static DebugMessenger()
         {
             uFrameECS.EcsComponentType = typeof (EcsComponent);
+            uFrameECS.EcsGroupType = typeof (IEcsComponent);
             uFrameECS.EntityComponentType = typeof (Entity);
         }
         public override void Initialize(UFrameContainer container)

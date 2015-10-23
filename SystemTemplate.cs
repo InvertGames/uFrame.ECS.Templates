@@ -36,7 +36,7 @@ namespace Invert.uFrame.ECS.Templates
             }
             foreach (var item in Ctx.Data.FilterNodes.OfType<ISetupCodeWriter>())
             {
-                item.WriteSetupCode(new HandlerCsharpVisitor() {_=Ctx}, Ctx);
+                item.WriteSetupCode(new CSharpSequenceVisitor() {_=Ctx}, Ctx);
             }
         }
         

@@ -45,6 +45,7 @@ namespace Invert.uFrame.ECS.Templates
 
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<CustomActionNode, CustomActionEditableTemplate>();
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<CustomActionNode, CustomActionDesignerTemplate>();      
+            RegisteredTemplateGeneratorsFactory.RegisterTemplate<CustomActionNode, CustomActionSequenceTemplate>();      
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<CodeActionNode, CodeActionEditableTemplate>();
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<CodeActionNode, CodeActionDesignerTemplate>();
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<SystemNode, LoaderTemplate>();
@@ -302,9 +303,10 @@ namespace Invert.uFrame.ECS.Templates
     [TemplateClass(TemplateLocation.DesignerFile)]
     [RequiresNamespace("uFrame.Kernel")]
     [RequiresNamespace("UnityEngine")]
+    [NamespacesFromItems]
     public partial class SequenceTemplate<TType> : IClassTemplate<TType>,ITemplateCustomFilename where TType : ISequenceNode
     {
-        public string Filename
+        public virtual string Filename
         {
              get { return Path2.Combine("Handlers", Ctx.Data.Name + "Handler.cs"); }
         }
@@ -333,7 +335,7 @@ namespace Invert.uFrame.ECS.Templates
             if (DebugSystem.IsDebugMode)
                 this.Ctx.SetType(typeof(IEnumerator));
 
-            var csharpVisitor = new HandlerCsharpVisitor()
+            var csharpVisitor = new CSharpSequenceVisitor()
             {
                 _ = Ctx
             };
@@ -555,6 +557,7 @@ namespace Invert.uFrame.ECS.Templates
     [RequiresNamespace("uFrame.ECS")]
     [RequiresNamespace("UnityEngine")]
     [WithMetaInfo]
+    [NamespacesFromItems]
     public partial class ComponentTemplate : IClassTemplate<ComponentNode>, ITemplateCustomFilename
     {
         public string Filename
@@ -612,6 +615,7 @@ namespace Invert.uFrame.ECS.Templates
     [AsPartial]
     [RequiresNamespace("uFrame.ECS")]
     [RequiresNamespace("UnityEngine")]
+    [NamespacesFromItems]
     public partial class ComponentEditableTemplate : IClassTemplate<ComponentNode>, ITemplateCustomFilename , IOnDemandTemplate
     {
         public string Filename
@@ -729,6 +733,7 @@ namespace Invert.uFrame.ECS.Templates
     [TemplateClass(TemplateLocation.DesignerFile), AsPartial]
     [RequiresNamespace("uFrame.ECS")]
     [AutoNamespaces]
+    [NamespacesFromItems]
     public partial class EventTemplate : IClassTemplate<EventNode>, ITemplateCustomFilename
     {
         public IEnumerable<PropertiesChildItem> Properties
@@ -783,9 +788,72 @@ namespace Invert.uFrame.ECS.Templates
         public TemplateContext<EventNode> Ctx { get; set; }
     }
 
+    [TemplateClass(TemplateLocation.DesignerFile), ForceBaseType(typeof (UFAction)), AsPartial]
+    [RequiresNamespace("uFrame.ECS")]
+    [RequiresNamespace("UnityEngine")]
+    [NamespacesFromItems]
+    public partial class CustomActionSequenceTemplate : SequenceTemplate<CustomActionNode>, ITemplateCustomFilename
+    {
+        public override string Filename
+        {
+            get { return Path2.Combine("CustomActions", Ctx.Data.Name + ".cs"); }
+        }
+
+        public override bool CanGenerate
+        {
+            get { return !Ctx.Data.CodeAction; }
+        }
+        [TemplateSetup]
+        public void Setup()
+        {
+            Ctx.CurrentDeclaration.CustomAttributes.Add(
+                new CodeAttributeDeclaration(typeof (ActionTitle).ToCodeReference(),
+                    new CodeAttributeArgument(
+                        new CodePrimitiveExpression(string.IsNullOrEmpty(Ctx.Data.ActionTitle)
+                            ? Ctx.Data.Name
+                            : Ctx.Data.ActionTitle))));
+            foreach (var item in Ctx.Data.Inputs)
+            {
+                var field = Ctx.CurrentDeclaration._public_(item.RelatedTypeName, item.Name);
+                field.CustomAttributes.Add(new CodeAttributeDeclaration(typeof (In).ToCodeReference(),
+                    new CodeAttributeArgument(new CodePrimitiveExpression(item.Name))));
+            }
+            foreach (var item in Ctx.Data.Outputs)
+            {
+                var field = Ctx.CurrentDeclaration._public_(item.RelatedTypeName, item.Name);
+                field.CustomAttributes.Add(new CodeAttributeDeclaration(typeof (Out).ToCodeReference(),
+                    new CodeAttributeArgument(new CodePrimitiveExpression(item.Name))));
+            }
+            foreach (var item in Ctx.Data.Branches)
+            {
+                var field = Ctx.CurrentDeclaration._public_(typeof (Action), item.Name);
+                field.CustomAttributes.Add(new CodeAttributeDeclaration(typeof (Out).ToCodeReference(),
+                    new CodeAttributeArgument(new CodePrimitiveExpression(item.Name))));
+            }
+        }
+
+        [TemplateComplete]
+        public void PostProcess()
+        {
+            if (DebugSystem.IsDebugMode)
+            {
+                var executeMethod =
+                    Ctx.CurrentDeclaration.Members.OfType<CodeMemberMethod>().FirstOrDefault(p => p.Name == "Execute");
+
+                // rename it to perform
+                if (executeMethod != null)
+                {
+                    executeMethod.Name = "Perform";
+                }
+            }
+        }
+   
+    }
+
     [TemplateClass(TemplateLocation.DesignerFile), ForceBaseType(typeof(UFAction)), AsPartial]
     [RequiresNamespace("uFrame.ECS")]
     [RequiresNamespace("UnityEngine")]
+    [NamespacesFromItems]
     public partial class CustomActionDesignerTemplate : IClassTemplate<CustomActionNode>, ITemplateCustomFilename
     {
         public string Filename
@@ -799,7 +867,7 @@ namespace Invert.uFrame.ECS.Templates
 
         public bool CanGenerate
         {
-            get { return true; }
+            get { return Ctx.Data.CodeAction; }
         }
 
         public void TemplateSetup()
@@ -832,6 +900,7 @@ namespace Invert.uFrame.ECS.Templates
 
     [TemplateClass(TemplateLocation.EditableFile), ForceBaseType(typeof(UFAction)), AsPartial]
     [RequiresNamespace("uFrame.ECS")]
+    [NamespacesFromItems]
     public partial class CustomActionEditableTemplate : IClassTemplate<CustomActionNode>, ITemplateCustomFilename
     {
 
@@ -842,7 +911,7 @@ namespace Invert.uFrame.ECS.Templates
 
         public bool CanGenerate
         {
-            get { return true; }
+            get { return Ctx.Data.CodeAction; }
         }
 
         public void TemplateSetup()
@@ -859,6 +928,9 @@ namespace Invert.uFrame.ECS.Templates
             get { return Path2.Combine("CustomActions", Ctx.Data.Name + ".cs"); }
         }
     }
+
+
+
     [TemplateClass(TemplateLocation.DesignerFile), ForceBaseType(typeof(UFAction)), AsPartial]
     [RequiresNamespace("uFrame.ECS")]
     [RequiresNamespace("UnityEngine")]

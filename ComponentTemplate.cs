@@ -29,7 +29,7 @@ namespace Invert.uFrame.ECS.Templates
         {
             get
             {
-                Ctx._("return _{0}Observable", Ctx.Item.Name);
+                Ctx._("return _{0}Observable ?? (_{0}Observable = new Subject<PropertyChangedEvent<{1}>>())", Ctx.Item.Name,Ctx.TypedItem.RelatedTypeName);
                 return null;
             }
         }

@@ -50,7 +50,7 @@ namespace Invert.uFrame.ECS.Templates
 
     }
 
-    public class HandlerCsharpVisitor : HandlerNodeVisitor
+    public class CSharpSequenceVisitor : SequenceVisitor
     {
         public TemplateContext _ { get; set; }
        
@@ -73,7 +73,12 @@ namespace Invert.uFrame.ECS.Templates
             //actionNode.WriteActionInputs(_);
             actionNode.WriteDebugInfo(_);
             actionNode.WriteCode(this, _);
-           // actionNode.WriteActionOutputs(_);
+            var outputBranch = actionNode.OutputTo<BranchesChildItem>();
+            if (outputBranch != null)
+            {
+                _._("{0}()", outputBranch.Name);
+            }
+            // actionNode.WriteActionOutputs(_);
         }
 
         public override void VisitOutput(IActionOut output)
@@ -113,21 +118,26 @@ namespace Invert.uFrame.ECS.Templates
             if (actionNode != null)
             {
                 actionNode.WriteActionOutputs(_);
-                
             }
-           
+            
+      
             base.VisitBranch(output);
             if (DebugSystem.IsDebugMode)
                 _._("yield break");
 
+            var branchesChildItem = output.OutputTo<BranchesChildItem>();
+            if (branchesChildItem != null)
+            {
+                _._("{0}()", branchesChildItem.Name);
+            }
             _.PopStatements();
             _.CurrentDeclaration.Members.Add(branchMethod);
 
         }
 
-        public override void VisitHandler(ISequenceNode handlerNode)
+        public override void VisitSequenceContainer(ISequenceNode handlerNode)
         {
-            base.VisitHandler(handlerNode);
+            base.VisitSequenceContainer(handlerNode);
             _._comment("HANDLER: " + handlerNode.Name);
         }
         
