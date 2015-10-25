@@ -23,7 +23,7 @@ public class ComponentEditor : Editor
         {    
             EditorGUI.BeginChangeCheck();
 
-            if (iterator.isArray)
+            if (iterator.isArray && iterator.propertyType != SerializedPropertyType.String)
             {
                 var list = new ReorderableList(iterator.serializedObject, iterator,true,true,true,true);
                 list.drawHeaderCallback += rect => GUI.Label(rect, iterator.displayName);
