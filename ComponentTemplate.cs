@@ -1,6 +1,7 @@
 using System.CodeDom;
 using System.Collections.Generic;
 using Invert.Core.GraphDesigner;
+using Invert.Json;
 using uFrame.ECS;
 using UniRx;
 using UnityEngine;
@@ -9,17 +10,19 @@ namespace Invert.uFrame.ECS.Templates
 {
     [RequiresNamespace("uFrame.ECS")]
     [RequiresNamespace("UniRx")]
+    [RequiresNamespace("Invert.Json")]
     [NamespacesFromItems]
     public partial class ComponentTemplate
     {
 
-        public static int _ComponentIds = 1;
-        [GenerateProperty]
-        public int ComponentID
+   
+        [GenerateProperty, AsOverride]
+        public int ComponentId
         {
             get
             {
-                Ctx._("return {0}", _ComponentIds++);
+                Ctx._("return {0}", Ctx.Data.ComponentId);
+                Ctx.CurrentProperty.Attributes = MemberAttributes.Override | MemberAttributes.Public;
                 return 0;
             }
         }
@@ -39,6 +42,11 @@ namespace Invert.uFrame.ECS.Templates
         {
             get
             {
+                var property = Ctx.Item as PropertiesChildItem;
+                foreach (var item in property.Descriptors)
+                {
+                    this.Ctx.CurrentProperty.CustomAttributes.Add(new CodeAttributeDeclaration(item.Name + "Attribute"));
+                }
                 var valueField = Ctx.CurrentDeclaration._private_(string.Format("{0}", Ctx.TypedItem.RelatedTypeName),
                     "_{0}", Ctx.Item.Name);
                 valueField.CustomAttributes.Add(new CodeAttributeDeclaration(typeof(SerializeField).ToCodeReference()));
@@ -71,6 +79,11 @@ namespace Invert.uFrame.ECS.Templates
         public ReactiveCollection<_ITEMTYPE_> CollectionReactive {
             get
             {
+                var property = Ctx.Item as CollectionsChildItem;
+                foreach (var item in property.Descriptors)
+                {
+                    this.Ctx.CurrentProperty.CustomAttributes.Add(new CodeAttributeDeclaration(item.Name + "Attribute"));
+                }
                 var valueField = Ctx.CurrentDeclaration._private_(string.Format("{0}[]", Ctx.TypedItem.RelatedTypeName),
                   "_{0}", Ctx.Item.Name);
                 valueField.CustomAttributes.Add(new CodeAttributeDeclaration(new CodeTypeReference(typeof (SerializeField))));

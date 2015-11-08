@@ -149,33 +149,4 @@ public class PublishActionTemplate : ActionTemplate<EventNode>
     }
 }
 
-public class SpawnEntityTemplate : ActionTemplate<EntityNode>
-{
-
-    protected override string ClassName
-    {
-        get { return "Spawn" + Ctx.Data.Name + "Entity"; }
-    }
-
-    protected override string ActionTitle
-    {
-        get { return string.Format("Entities/Spawn {0}", Ctx.Data.Name); }
-    }
-    [GenerateMethod(CallBase = true), AsOverride]
-    public void Execute()
-    {
-        AddIn(typeof(string), "Pool");
-
-        foreach (var item in Ctx.Data.Components.Select(p=>p.SourceItem).OfType<ComponentNode>().SelectMany(x=>x.PersistedItems.OfType<ITypedItem>()))
-        {
-            AddIn(item.RelatedTypeName, item.Name);
-        }
-        foreach (var item in Ctx.Data.Components.Select(p => p.SourceItem).OfType<ComponentNode>())
-        {
-            AddOut(item.Name, item.Name);
-        }
-        AddOut(typeof (Entity), "Entity");
-
-    }
-}
 

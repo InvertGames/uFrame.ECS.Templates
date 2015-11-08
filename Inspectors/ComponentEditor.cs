@@ -97,7 +97,7 @@ public class ComponentEditor : Editor
                  
                     if (typeof(Enum).IsAssignableFrom(propertyInfo.PropertyType))
                     {
-                        propertyInfo.SetValue(target, Enum.GetValues(propertyInfo.PropertyType).GetValue(iterator.enumValueIndex), null);
+                        propertyInfo.SetValue(target,  Enum.GetValues(propertyInfo.PropertyType).GetValue(iterator.enumValueIndex), null);
                     }
                 }
             }

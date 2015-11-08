@@ -14,29 +14,29 @@ namespace Invert.uFrame.ECS.Templates
         {
             get
             {
-                
+
                 this.Ctx.SetType(Ctx.Data.EventType);
                 return null;
             }
             set
             {
-                
+
             }
         }
 
 
-   
+
         [GenerateProperty, WithField]
         public EcsSystem System { get; set; }
 
         [TemplateSetup]
         public void SetName()
-        {   
-            foreach (var item in  Ctx.Data.FilterInputs)
+        {
+            foreach (var item in Ctx.Data.FilterInputs)
             {
                 var context = item.FilterNode;
                 if (context == null) continue;
-                CreateFilterProperty( item, context );
+                CreateFilterProperty(item, context);
             }
             Ctx.Data.AddProperties(this.Ctx);
 
@@ -53,16 +53,16 @@ namespace Invert.uFrame.ECS.Templates
     public class CSharpSequenceVisitor : SequenceVisitor
     {
         public TemplateContext _ { get; set; }
-       
+
         private CodeMethodInvokeExpression _currentActionInvoker;
 
-        
+
 
         public override void BeforeVisitAction(SequenceItemNode actionNode)
         {
-           
+
             base.BeforeVisitAction(actionNode);
-           
+
 
         }
 
@@ -86,10 +86,10 @@ namespace Invert.uFrame.ECS.Templates
             base.VisitOutput(output);
             if (output.ActionFieldInfo != null)
                 _.TryAddNamespace(output.ActionFieldInfo.MemberType.Namespace);
-            
+
             if (output is ActionBranch) return;
             var varDecl = new CodeMemberField(
-                output.VariableType.FullName.Replace("&", "").ToCodeReference(), 
+                output.VariableType.FullName.Replace("&", "").ToCodeReference(),
                 output.VariableName
                 )
             {
@@ -102,7 +102,7 @@ namespace Invert.uFrame.ECS.Templates
         public override void VisitSetVariable(SetVariableNode setVariableNode)
         {
             base.VisitSetVariable(setVariableNode);
-           
+
         }
 
 
@@ -113,14 +113,30 @@ namespace Invert.uFrame.ECS.Templates
                 ReturnType = !DebugSystem.IsDebugMode ? new CodeTypeReference(typeof(void)) : new CodeTypeReference(typeof(IEnumerator)),
                 Name = output.VariableName
             };
+
+
             _.PushStatements(branchMethod.Statements);
             var actionNode = output.Node as ActionNode;
             if (actionNode != null)
             {
                 actionNode.WriteActionOutputs(_);
             }
+
+            if (output.ActionFieldInfo != null && output.ActionFieldInfo.IsBranch)
+            {
+                foreach (var item in output.ActionFieldInfo.DelegateMembers)
+                {
+                    branchMethod.Parameters.Add(new CodeParameterDeclarationExpression(item.MemberType.FullName, item.MemberName));
+
+                    if (actionNode != null)
+                    _._("{0}_{1} = {1}", actionNode.VariableName, item.MemberName);
             
-      
+
+                }
+            }
+    
+
+
             base.VisitBranch(output);
             if (DebugSystem.IsDebugMode)
                 _._("yield break");
@@ -140,7 +156,7 @@ namespace Invert.uFrame.ECS.Templates
             base.VisitSequenceContainer(handlerNode);
             _._comment("HANDLER: " + handlerNode.Name);
         }
-        
+
         public override void VisitInput(IActionIn input)
         {
             base.VisitInput(input);
@@ -158,12 +174,12 @@ namespace Invert.uFrame.ECS.Templates
                 };
 
                 _.CurrentDeclaration.Members.Add(varDecl);
-         
+
                 var variableReference = input.Item;
                 if (variableReference != null)
-                _.CurrentStatements.Add(new CodeAssignStatement(new CodeSnippetExpression(input.VariableName),
-                    new CodeSnippetExpression(variableReference.VariableName)));
-            } 
+                    _.CurrentStatements.Add(new CodeAssignStatement(new CodeSnippetExpression(input.VariableName),
+                        new CodeSnippetExpression(variableReference.VariableName)));
+            }
             var inputVariable = input.InputFrom<VariableNode>();
             if (inputVariable != null)
             {
@@ -172,7 +188,7 @@ namespace Invert.uFrame.ECS.Templates
                 {
                     _.CurrentDeclaration.Members.Add(inputVariable.GetFieldStatement());
                 }
-                
+
             }
 
 
