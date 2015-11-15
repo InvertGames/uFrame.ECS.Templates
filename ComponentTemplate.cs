@@ -14,8 +14,6 @@ namespace Invert.uFrame.ECS.Templates
     [NamespacesFromItems]
     public partial class ComponentTemplate
     {
-
-   
         [GenerateProperty, AsOverride]
         public int ComponentId
         {
@@ -72,6 +70,17 @@ namespace Invert.uFrame.ECS.Templates
 
         }
 
+        //[If("BlackBoard"), GenerateMethod]
+        //public void Install(IBlackBoardSystem blackboardSystem)
+        //{
+        //    Ctx.CurrentDeclaration.BaseTypes.Add(typeof (IBlackBoardComponent));
+        //    foreach (var item in Ctx.Data.Properties)
+        //    {
+        //        Ctx._("blackboardSystem.AddVariable(\"{0}\",()=>{0},v=>{0} = v)", item.Name);
+        //    }
+         
+
+        //}
         //[ForEach("Collections"), GenerateProperty, WithName, WithLazyField(null,typeof(SerializeField))]
         //public List<_ITEMTYPE_> Collection { get; set; }
 

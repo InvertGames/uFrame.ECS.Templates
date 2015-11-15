@@ -62,6 +62,7 @@ namespace Invert.uFrame.ECS.Templates
     [TemplateClass(TemplateLocation.DesignerFile, "I{0}"), AsPartial]
     [RequiresNamespace("uFrame.Kernel")]
     [RequiresNamespace("uFrame.ECS")]
+    [RequiresNamespace("System.Linq")]
     [ForceBaseType(typeof(IEcsComponent))]
     [WithMetaInfo]
     public partial class DescriptorInterfaceTemplate : IClassTemplate<DescriptorNode>, ITemplateCustomFilename
@@ -82,6 +83,19 @@ namespace Invert.uFrame.ECS.Templates
         }
 
         public TemplateContext<DescriptorNode> Ctx { get; set; }
+
+        [GenerateProperty]
+        public PropertyInfo[] _Name_Members
+        {
+            get
+            {
+                //var field = Ctx.CurrentDeclaration._private_(typeof (PropertyInfo[]), "_" + Ctx.Data.Name);
+                //Ctx._if("{0} == null", field.Name)
+                //    .TrueStatements._("{0} = this.GetDescriptorProperties<{0}Attribute>().ToArray()", field.Name);
+                //Ctx._("return {0}", field.Name);
+                return null;
+            }
+        }
     }
     [TemplateClass(TemplateLocation.DesignerFile, "{0}Attribute"), AsPartial]
     [RequiresNamespace("uFrame.Kernel")]
@@ -843,11 +857,14 @@ namespace Invert.uFrame.ECS.Templates
                 Ctx.SetBaseType(typeof(EcsComponent));
             }
             foreach (
-                var item in Ctx.Data.PersistedItems.OfType<IDescriptorItem>().SelectMany(p => p.Descriptors).Distinct())
+                var item in Descriptors)
             {
                 Ctx.CurrentDeclaration.BaseTypes.Add(item.ContextTypeName);
+
             }
-            
+
+            if (Ctx.Data.BlackBoard)
+                Ctx.CurrentDeclaration.BaseTypes.Add(typeof(IBlackBoardComponent));
 
             foreach (var item in Ctx.Data.GetMembers())
             {
@@ -855,6 +872,23 @@ namespace Invert.uFrame.ECS.Templates
             }
         }
 
+        public IEnumerable<DescriptorNode> Descriptors
+        {
+            get { return Ctx.Data.PersistedItems.OfType<IDescriptorItem>().SelectMany(p => p.Descriptors).Distinct(); }
+        }
+
+        [ForEach("Descriptors"), GenerateProperty]
+        public PropertyInfo[] _Name_Members
+        {
+            get
+            {
+                var field = Ctx.CurrentDeclaration._private_("static System.Reflection.PropertyInfo[]", "_" + Ctx.Item.Name + "Members");
+                Ctx._if("{0} == null", field.Name)
+                    .TrueStatements._("{0} = this.GetDescriptorProperties<{1}Attribute>().ToArray()", field.Name, Ctx.Item.Name);
+                Ctx._("return {0}", field.Name);
+                return null;
+            }
+        }
         [TemplateComplete]
         public void TemplateComplete()
         {
