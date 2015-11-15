@@ -34,6 +34,10 @@ namespace Invert.uFrame.ECS.Templates
                 if (component != null)
                 {
                     Ctx._("{0}Manager = ComponentSystem.RegisterComponent<{0}>({1})", item.Name, component.ComponentId);
+                    if (component.BlackBoard)
+                    {
+                        Ctx._("BlackBoardSystem.EnsureBlackBoard<{0}>()", item.Name);
+                    }
                 }
                 else
                 {
