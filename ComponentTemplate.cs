@@ -101,7 +101,7 @@ namespace Invert.uFrame.ECS.Templates
                     "_{0}Reactive", Ctx.Item.Name);
 
                 Ctx._if("{0} == null", field.Name)
-                    .TrueStatements._("{0} = new ReactiveCollection<{1}>(_{2})", field.Name, Ctx.TypedItem.RelatedTypeName, Ctx.Item.Name, valueField.Name);
+                    .TrueStatements._("{0} = new ReactiveCollection<{1}>(_{2} ?? new {1}[] {{ }})", field.Name, Ctx.TypedItem.RelatedTypeName, Ctx.Item.Name, valueField.Name);
                 Ctx._("return {0}", field.Name);
                 return null;
             }
