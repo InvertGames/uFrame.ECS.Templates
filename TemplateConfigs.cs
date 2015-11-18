@@ -112,7 +112,7 @@ namespace Invert.uFrame.ECS.Templates
             }
         }
         public string OutputPath { get { return string.Empty; } }
-        public bool CanGenerate { get { return true; } }
+        public bool CanGenerate { get { return Ctx.Data.Type == DescriptorNodeType.Properties; } }
         public void TemplateSetup()
         {
             this.Ctx.SetBaseType(typeof(Attribute));
