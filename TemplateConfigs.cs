@@ -714,11 +714,11 @@ namespace Invert.uFrame.ECS.Templates
 
         public void TemplateSetup()
         {
-        //    Ctx.CurrentDeclaration.Name = Ctx.Data.Name;
-        //    if (!Ctx.IsDesignerFile)
-        //    {
-        //        Ctx.CurrentDeclaration.BaseTypes.Clear();
-        //    }
+            //    Ctx.CurrentDeclaration.Name = Ctx.Data.Name;
+            if (!Ctx.IsDesignerFile)
+            {
+                Ctx.CurrentDeclaration.BaseTypes.Clear();
+            }
         }
 
         public TemplateContext<SystemNode> Ctx { get; set; }
