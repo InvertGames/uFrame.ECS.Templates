@@ -16,6 +16,7 @@ namespace Invert.uFrame.ECS.Templates
     [ForceBaseType(typeof(EcsSystem))]
     [RequiresNamespace("uFrame.ECS")]
     [RequiresNamespace("UniRx")]
+    [RequiresNamespace("UnityEngine")]
 
     public partial class SystemTemplate
     {
