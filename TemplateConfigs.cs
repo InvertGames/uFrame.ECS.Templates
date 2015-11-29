@@ -189,7 +189,7 @@ namespace Invert.uFrame.ECS.Templates
 
         public bool CanGenerate
         {
-            get { return false; }
+            get { return true; }
         }
 
         public void TemplateSetup()
@@ -518,7 +518,7 @@ namespace Invert.uFrame.ECS.Templates
     {
         public override bool CanGenerate
         {
-            get { return Ctx.Data.Children.Any(); }
+            get { return !Ctx.Data.CodeHandler && !Ctx.Data.Custom; }
         }
     }
 
