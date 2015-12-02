@@ -47,7 +47,7 @@ namespace Invert.uFrame.ECS.Templates
                 
             }
        
-            foreach (var item in Ctx.Data.FilterNodes.OfType<ISetupCodeWriter>())
+            foreach (var item in Ctx.Data.FilterNodes.OfType<ISetupCodeWriter>().ToArray())
             {
                 item.WriteSetupCode(new CSharpSequenceVisitor() {_=Ctx}, Ctx);
             }

@@ -668,7 +668,7 @@ namespace Invert.uFrame.ECS.Templates
             {
                 if (Ctx.Data.Name == null)
                 {
-                     throw new Exception(Ctx.Data.Name + " Graph is null");
+                    throw new Exception(Ctx.Data.Name + " Graph name is empty");
                 }
                 if (Ctx.IsDesignerFile)
                 {
@@ -736,7 +736,7 @@ namespace Invert.uFrame.ECS.Templates
             {
                 if (Ctx.Data.Name == null)
                 {
-                    throw new Exception(Ctx.Data.Name + " Graph is null");
+                   throw new Exception(Ctx.Data.Name + " Graph name is null");
                 }
                 if (Ctx.IsDesignerFile)
                 {
