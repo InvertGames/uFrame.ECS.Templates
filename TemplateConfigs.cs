@@ -38,7 +38,7 @@ namespace Invert.uFrame.ECS.Templates
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<GroupNode, GroupTemplate>();
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<GroupNode, GroupItemTemplate>();
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<HandlerNode, HandlerTemplate>();
-            RegisteredTemplateGeneratorsFactory.RegisterTemplate<HandlerNode, EditableHandlerTemplate>();
+            //RegisteredTemplateGeneratorsFactory.RegisterTemplate<HandlerNode, EditableHandlerTemplate>();
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<uFrameDatabaseConfig, DbLoaderTemplate>();
             RegisteredTemplateGeneratorsFactory.RegisterTemplate<uFrameDatabaseConfig, EcsEditorExtensionTemplate>();
             //RegisteredTemplateGeneratorsFactory.RegisterTemplate<PropertyChangedNode, PropertyHandlerTemplate>();
@@ -518,7 +518,7 @@ namespace Invert.uFrame.ECS.Templates
     {
         public override bool CanGenerate
         {
-            get { return !Ctx.Data.CodeHandler && !Ctx.Data.Custom; }
+            get { return Ctx.Data.Children.Any(); }
         }
     }
 
@@ -583,7 +583,7 @@ namespace Invert.uFrame.ECS.Templates
 
         public bool CanGenerate
         {
-            get { return Ctx.Data.CodeHandler && !Ctx.Data.Custom; }
+            get { return false; }
         }
 
         public void TemplateSetup()
